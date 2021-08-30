@@ -1,0 +1,6 @@
+urllib3
+requests
+jinja2
+pathlib
+sphinx
+humanfriendly
