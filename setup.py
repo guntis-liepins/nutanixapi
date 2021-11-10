@@ -23,6 +23,6 @@ setup(name='nutanixapi',
       license='MIT',
       classifiers=classifiers,
       keywords='',
-      packages=find_packages(include=['src']),
+      packages=find_packages(),
       install_requires=['urllib3','requests','jinja2','pathlib','sphinx','humanfriendly']
      )
