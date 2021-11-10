@@ -13,7 +13,7 @@ classifiers=[
           'Programming Language :: Python :: 3',
           ]
 
-setup(name='nutanixapi',
+setup(name='Distutils',
       version='0.1',
       description='Simplified Nutanix API library',
       lond_description="Simplified Nutanix API library",
