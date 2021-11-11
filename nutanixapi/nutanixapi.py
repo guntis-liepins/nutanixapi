@@ -162,7 +162,7 @@ class NutanixAPI:
         user_data=b64encode(rendered_ci_template.encode()).decode('ascii')
         return user_data
 
-    def list_images(self):
+    def list_images_screen(self):
          data={
              "kind":"image",
              "length":self.max_results
@@ -170,7 +170,17 @@ class NutanixAPI:
          response=self.rest_call('POST','images/list',data)
          if response.status_code == 200:
              self._print_entities(response)
-         
+
+    def list_images_screen(self):
+         data={
+             "kind":"image",
+             "length":self.max_results
+             }   
+         response=self.rest_call('POST','images/list',data)
+         if response.status_code == 200:
+             return(response)
+    
+
     def get_image_uuid(self,image_name):
         data={
              "kind":"image",
@@ -180,6 +190,15 @@ class NutanixAPI:
         return self._get_uuid_by_name(response,image_name) if response.status_code == 200 else False
     
     def list_subnets(self):
+         data={
+             "kind":"subnet",
+             "length":self.max_results
+             }   
+         response=self.rest_call('POST','subnets/list',data)
+         if response.status_code == 200:
+            return(response)
+
+    def list_subnets_screen(self):
          data={
              "kind":"subnet",
              "length":self.max_results
@@ -225,6 +244,15 @@ class NutanixAPI:
              return(result_json) 
 
     def list_projects(self):
+         data={
+             "kind":"project",
+             "length":self.max_results
+             }   
+         response=self.rest_call('POST','projects/list',data)
+         if response.status_code == 200:
+             return(response) 
+
+    def list_projects_screen(self):
          data={
              "kind":"project",
              "length":self.max_results
