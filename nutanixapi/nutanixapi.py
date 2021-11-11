@@ -1,7 +1,6 @@
 import json
 import os
 import urllib3
-import urllib
 urllib3.disable_warnings()  #for now
 import requests     #https://requests.readthedocs.io/en/master/
 from base64 import b64encode
@@ -14,17 +13,17 @@ from urllib.parse import urlencode
 
 class NutanixAPI:
     def __init__(self,url,username,password,log_file,log_level,ssl_verify=True,max_results=99999):
-        """
-        Creates Nutanix API object
-        Args:
-            url ([string]): URL of API en dpoint
-            username (string): username
-            password ([string]): password
-            log_file ([string]): logfile , where operations is logged
-            log_level ([type]): logging.DEBUG/logging.WARNING/logging.INFO, 
-            ssl_verify (bool, optional): SSL verification. Defaults to True.   #not implemented properly
-            max_results (int, optional): maximum number of returned results. Defaults to 99999.
-        """
+    """
+    Creates Nutanix API object
+    Args:
+        url ([string]): URL of API en dpoint
+        username (string): username
+        password ([string]): password
+        log_file ([string]): logfile , where operations is logged
+        log_level ([type]): logging.DEBUG/logging.WARNING/logging.INFO, 
+        ssl_verify (bool, optional): SSL verification. Defaults to True.   #not implemented properly
+        max_results (int, optional): maximum number of returned results. Defaults to 99999.
+    """
         # Initialise the options.
         self.url = url
         self.username = username.replace('\n', '')
@@ -113,7 +112,7 @@ class NutanixAPI:
         with open(path, 'w') as f:
             f.write(data)
         
-    def _prepare_user_data_managed(self,template_dir,nework_cfg): 
+    def _prepare_user_data_managed(self,template_dir): 
         """
         Gets network configuration as  and creates cloud-init file
         which genereates proper configuration and encodes it for use in vm
@@ -346,7 +345,7 @@ class NutanixAPI:
             None: Response object
         """
         if network_cfg is None:  #if no IP address is not specified , using DHCP
-            user_data=self._prepare_user_data_managed(network_cfg)
+            user_data=self._prepare_user_data_managed()
             ip_endpoint_list=[{ "ip_type":"DHCP" }]
         elif isinstance(network_cfg,str):    #if parameter is simple string
             user_data=self._prepare_user_data_managed(network_cfg)
