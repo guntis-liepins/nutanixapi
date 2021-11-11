@@ -345,7 +345,7 @@ class NutanixAPI:
             None: Response object
         """
         if network_cfg is None:  #if no IP address is not specified , using DHCP
-            user_data=self._prepare_user_data_managed()
+            user_data=self._prepare_user_data_managed(template_dir)
             ip_endpoint_list=[{ "ip_type":"DHCP" }]
         elif isinstance(network_cfg,str):    #if parameter is simple string
             user_data=self._prepare_user_data_managed(template_dir,network_cfg)
