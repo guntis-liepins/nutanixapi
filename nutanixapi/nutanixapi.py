@@ -86,7 +86,6 @@ class NutanixAPI:
         return response
 
     def _get_templ_path(self,template_dir,template_name):
-        #template_dir=base=os.path.join(os.path.dirname(__file__),"templates")
         full_path=os.path.join(template_dir,template_name)
         return full_path
 
@@ -113,7 +112,7 @@ class NutanixAPI:
         with open(path, 'w') as f:
             f.write(data)
         
-    def _prepare_user_data_managed(self,template_dir): 
+    def _prepare_user_data_managed(self,template_dir,nework_cfg): 
         """
         Gets network configuration as  and creates cloud-init file
         which genereates proper configuration and encodes it for use in vm
@@ -122,7 +121,12 @@ class NutanixAPI:
         Args:
         """
         cloud_init_file=self._read_file(self._get_templ_path(template_dir,"cloud-init.yaml.j2"))
-        return ""
+        t_ci=Template(cloud_init_file)
+        rendered_template=t_ci.render()
+        #self._write_file("c:\\temp\\user_data.yaml",rendered_template)
+        user_data=b64encode(rendered_template.encode()).decode('ascii')
+        logging.debug(f"UserData:{user_data}")
+        return user_data
 
     def _prepare_user_data_unmanaged(self,template_dir,net_cfg): 
         """
@@ -157,9 +161,9 @@ class NutanixAPI:
         t_ci=Template(cloud_init_file)
         b64_str=rendered_net_template_b64.decode('ascii')
         rendered_ci_template=t_ci.render(netplan_content=b64_str)
-        #rendered_ci_template=t_ci.render(netplan_content=rendered_net_template)
         #self._write_file("c:\\temp\\user_data.yaml",rendered_ci_template)
         user_data=b64encode(rendered_ci_template.encode()).decode('ascii')
+        logging.debug(f"UserData:{user_data}")
         return user_data
 
     def list_clusters_screen(self):
@@ -284,11 +288,11 @@ class NutanixAPI:
         return uuid of current user in nutanix API
         """
         response=self.rest_call('GET','users/me')
-        result_json = json.loads(response.content)  
-        if response.status_code == 200:
-           return result_json['metadata']['uuid']
+        if response.status_code == 200 or response.status_code == 202:
+            result_json = json.loads(response.content)
+            return result_json['metadata']['uuid']
         return False
-    
+
     def create_vm_simple(self,
                   vm_name,
                   vm_description,
@@ -301,7 +305,7 @@ class NutanixAPI:
                   num_vcpus_per_socket=1,
                   num_sockets=1,
                   memory_size_mib=1024,
-                  template_dir="./templates",
+                  template_dir=".",
                   network_cfg=None
                   ):
         """
@@ -319,6 +323,7 @@ class NutanixAPI:
             num_vcpus_per_socket (int, optional): Numbers of vcpu per socker. Defaults to 1.
             num_sockets (int, optional): Number of CPU sockets. Defaults to 1.
             memory_size_mib (int, optional): How much memory VM will get. Defaults to 1024.
+            template_dir(path where CloudInit templates are stored. No inside version control!)
             network_cfg(Dictionary,optional)=None: network configuraton
 
             Thre are three cases in Nutanix:
@@ -346,7 +351,7 @@ class NutanixAPI:
             None: Response object
         """
         if network_cfg is None:  #if no IP address is not specified , using DHCP
-            user_data=self._prepare_user_data_managed(template_dir)
+            user_data=self._prepare_user_data_managed(template_dir,network_cfg)
             ip_endpoint_list=[{ "ip_type":"DHCP" }]
         elif isinstance(network_cfg,str):    #if parameter is simple string
             user_data=self._prepare_user_data_managed(template_dir,network_cfg)
@@ -599,7 +604,7 @@ class NutanixAPI:
         
     def get_task_status(self,task_uuid):
         response=self.rest_call('GET',f"tasks/{task_uuid}")
-        result_json = json.loads(response.content)
+        #result_json = json.loads(response.content)
         return response
 
     def _vm_set_power_state(self,vm_uuid,power_state):
