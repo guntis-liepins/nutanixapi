@@ -348,13 +348,13 @@ class NutanixAPI:
             user_data=self._prepare_user_data_managed()
             ip_endpoint_list=[{ "ip_type":"DHCP" }]
         elif isinstance(network_cfg,str):    #if parameter is simple string
-            user_data=self._prepare_user_data_managed(network_cfg)
+            user_data=self._prepare_user_data_managed(template_dir,network_cfg)
             ip_endpoint_list=[{
 	            "ip": network_cfg, #!!! need validation or exception?
                 "type": "ASSIGNED"
             }]
         elif isinstance(network_cfg,dict):
-            user_data=self._prepare_user_data_unmanaged(network_cfg)
+            user_data=self._prepare_user_data_unmanaged(template_dir,network_cfg)
             ip_endpoint_list=[{ "type": "ASSIGNED"}]
         else:   #error
             return False
