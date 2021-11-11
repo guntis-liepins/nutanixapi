@@ -163,9 +163,22 @@ class NutanixAPI:
         return user_data
 
     def list_clusters_screen(self):
-         response=self.rest_call('GET','clusters')
+         data={
+             "kind":"cluster",
+             "length":self.max_results
+             }   
+         response=self.rest_call('POST','clusters/list',data)
          if response.status_code == 200:
              self._print_entities(response)
+
+    def list_clusters(self):
+         data={
+             "kind":"cluster",
+             "length":self.max_results
+             }   
+         response=self.rest_call('POST','clusters/list',data)
+         if response.status_code == 200:
+             return(response)
 
     def list_images_screen(self):
          data={
