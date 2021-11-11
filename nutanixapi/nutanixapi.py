@@ -85,8 +85,8 @@ class NutanixAPI:
              print(repr(ex))
         return response
 
-    def _get_templ_path(self,template_name):
-        template_dir=base=os.path.join(os.path.dirname(__file__),"templates")
+    def _get_templ_path(self,template_dir,template_name):
+        #template_dir=base=os.path.join(os.path.dirname(__file__),"templates")
         full_path=os.path.join(template_dir,template_name)
         return full_path
 
@@ -113,7 +113,7 @@ class NutanixAPI:
         with open(path, 'w') as f:
             f.write(data)
         
-    def _prepare_user_data_managed(self,nework_cfg): 
+    def _prepare_user_data_managed(self,template_dir,nework_cfg): 
         """
         Gets network configuration as  and creates cloud-init file
         which genereates proper configuration and encodes it for use in vm
@@ -121,10 +121,10 @@ class NutanixAPI:
 
         Args:
         """
-        cloud_init_file=self._read_file(self._get_templ_path("cloud-init.yaml.j2"))
+        cloud_init_file=self._read_file(self._get_templ_path(template_dir,"cloud-init.yaml.j2"))
         return ""
 
-    def _prepare_user_data_unmanaged(self,net_cfg): 
+    def _prepare_user_data_unmanaged(self,template_dir,net_cfg): 
         """
         Gets network configuration as dictionary and creates cloud-init file
         which genereates proper configuration and encodes it for use in vm
@@ -141,8 +141,8 @@ class NutanixAPI:
                 dns_search
                 }
         """
-        cloud_init_file=self._read_file(self._get_templ_path("cloud-init-net.yaml.j2"))
-        net_tmpl_file=self._read_file(self._get_templ_path("static.yaml.j2"))
+        cloud_init_file=self._read_file(self._get_templ_path(template_dir,"cloud-init-net.yaml.j2"))
+        net_tmpl_file=self._read_file(self._get_templ_path(template_dir,"static.yaml.j2"))
         t_net=Template(net_tmpl_file)        #create jinja templates
         rendered_net_template=t_net.render(
                         ip_address=net_cfg['ip_address'],
@@ -152,13 +152,13 @@ class NutanixAPI:
                         dns_server2=net_cfg['dns_server2'],
                         dns_search=net_cfg['dns_search']
                         )
-        self._write_file("c:\\temp\\network_cfg.yaml",rendered_net_template)
+        #self._write_file("c:\\temp\\network_cfg.yaml",rendered_net_template)
         rendered_net_template_b64=b64encode(rendered_net_template.encode())
         t_ci=Template(cloud_init_file)
         b64_str=rendered_net_template_b64.decode('ascii')
         rendered_ci_template=t_ci.render(netplan_content=b64_str)
         #rendered_ci_template=t_ci.render(netplan_content=rendered_net_template)
-        self._write_file("c:\\temp\\user_data.yaml",rendered_ci_template)
+        #self._write_file("c:\\temp\\user_data.yaml",rendered_ci_template)
         user_data=b64encode(rendered_ci_template.encode()).decode('ascii')
         return user_data
 
@@ -301,6 +301,7 @@ class NutanixAPI:
                   num_vcpus_per_socket=1,
                   num_sockets=1,
                   memory_size_mib=1024,
+                  template_dir="./templates",
                   network_cfg=None
                   ):
         """
