@@ -13,17 +13,17 @@ from urllib.parse import urlencode
 
 class NutanixAPI:
     def __init__(self,url,username,password,log_file,log_level,ssl_verify=True,max_results=99999):
-    """
-    Creates Nutanix API object
-    Args:
-        url ([string]): URL of API en dpoint
-        username (string): username
-        password ([string]): password
-        log_file ([string]): logfile , where operations is logged
-        log_level ([type]): logging.DEBUG/logging.WARNING/logging.INFO, 
-        ssl_verify (bool, optional): SSL verification. Defaults to True.   #not implemented properly
-        max_results (int, optional): maximum number of returned results. Defaults to 99999.
-    """
+        """
+        Creates Nutanix API object
+        Args:
+            url ([string]): URL of API en dpoint
+            username (string): username
+            password ([string]): password
+            log_file ([string]): logfile , where operations is logged
+            log_level ([type]): logging.DEBUG/logging.WARNING/logging.INFO, 
+            ssl_verify (bool, optional): SSL verification. Defaults to True.   #not implemented properly
+            max_results (int, optional): maximum number of returned results. Defaults to 99999.
+        """
         # Initialise the options.
         self.url = url
         self.username = username.replace('\n', '')
