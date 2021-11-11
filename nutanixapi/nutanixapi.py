@@ -162,6 +162,11 @@ class NutanixAPI:
         user_data=b64encode(rendered_ci_template.encode()).decode('ascii')
         return user_data
 
+    def list_clusters_screen(self):
+         response=self.rest_call('GET','clusters')
+         if response.status_code == 200:
+             self._print_entities(response)
+
     def list_images_screen(self):
          data={
              "kind":"image",
