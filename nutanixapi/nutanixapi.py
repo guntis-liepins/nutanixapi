@@ -171,7 +171,7 @@ class NutanixAPI:
          if response.status_code == 200:
              self._print_entities(response)
 
-    def list_images_screen(self):
+    def list_images(self):
          data={
              "kind":"image",
              "length":self.max_results
