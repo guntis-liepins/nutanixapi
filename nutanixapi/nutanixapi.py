@@ -601,4 +601,96 @@ class NutanixAPI:
         result_json = json.loads(response.content)
         return response
 
-       
+    def _vm_set_power_state(self,vm_uuid,power_state):
+        #from https://www.nutanix.dev/2019/12/06/put-that-down-updating-a-vm-with-prism-central-v3-api/
+        logging.debug(f"_vm_set_power_state vm_uuid:{vm_uuid} power_state:{power_state}")
+        vm_data_json=self.get_vm(vm_uuid)
+        logging.debug(f"vm_data_json:{json.dumps(vm_data_json)}")
+        spec=vm_data_json['spec']
+        spec["resources"]["power_state"]=power_state
+        data={
+                "api_version": "3.1",
+                "spec": spec,
+                "metadata": vm_data_json['metadata']
+                }
+        logging.debug(f"request data:{json.dumps(data)}")
+        response=self.rest_call('PUT',f"vms/{vm_uuid}",data)
+        return response
+
+    def vm_poweron(self,vm_uuid):
+        logging.debug(f"vm_poweron vm_uuid:{vm_uuid}")
+        return self._vm_set_power_state(vm_uuid,'ON')
+
+    def vm_poweroff(self,vm_uuid):
+        logging.debug(f"vm_poweroff vm_uuid:{vm_uuid}")
+        return self._vm_set_power_state(vm_uuid,'OFF')
+
+#utilities
+    @staticmethod
+    def get_task_uuid(result):
+        try:
+            task_uuid=result['status']['execution_context']['task_uuid']
+        except IndexError:
+            return None
+        return task_uuid
+
+    @staticmethod
+    def process_response(response):
+        logging.debug(f"process_response response:{response}")
+        status_code=response.status_code
+        logging.debug(f"Status code:{status_code}")    
+        if status_code == 200 or status_code == 202:
+            result=json.loads(response.content)
+            logging.debug(f"result:{result}")    
+        else:
+            result =None
+        return(status_code,result)
+
+    @staticmethod
+    def continue_if_ok(status_code,msg):
+        """
+        check API call status and if error exit further execution
+        Args:
+        status_code ([string]): status code from response
+        msg ([string]): prints message in case of error
+        """
+        if not ( status_code == 200 or status_code == 202):
+            print(msg)
+            os._exit(-1) #!!! have to think about cleanup
+        return True
+
+    @staticmethod
+    def continue_if_task_ok(task_status,msg):
+        """
+        check task status and if error exit further execution
+        Args:
+        task_status ([string]): Nutanix API object instance
+        msg ([string]): prints message in case of error
+        """
+        if task_status != "SUCCEEDED":
+            print(msg)
+            os._exit(-1) #!!! have to think about cleanup
+        return True
+
+    def wait_for_task(self,task_uuid):
+        """
+        waits for Nutanix task to finish
+        Args:
+        vm_name ([NutanixAPI Object]): Nutanix API object instance
+        task_uuid ([string]): Nutanix tasks UUID
+        Returns:
+            task status  (SUCCEEDED or FAILED or smth else)
+        """
+        task_status="PENDING"
+        while True:
+            response_task=self.get_task_status(task_uuid)
+            status_code_task=response_task.status_code
+            if status_code_task==200 or status_code_task==202:
+                result_json_task = json.loads(response_task.content)
+                task_status=result_json_task['status']
+                logging.debug(f"Task {task_uuid} status {task_status}")
+            else:
+                return('ERROR')
+            if not ( task_status == 'PENDING' or task_status =='RUNNING'):
+                return task_status
+            time.sleep(1)   
